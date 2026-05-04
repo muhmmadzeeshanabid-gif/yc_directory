@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { parseServerActionResponse } from "@/lib/utils";
 import slugify from "slugify";
 import { writeClient } from "@/sanity/lib/write-client";
+import { client } from "@/sanity/lib/client";
 import { formSchema } from "@/lib/validation";
 
 export const createStartUp = async (state, formData) => {
@@ -67,6 +68,33 @@ export const createStartUp = async (state, formData) => {
 
     return parseServerActionResponse({
       error: { general: error.message || "An unexpected error has occurred" },
+      status: "ERROR",
+    });
+  }
+};
+
+export const deleteStartup = async (startupId) => {
+  const session = await auth();
+
+  if (!session) {
+    return parseServerActionResponse({
+      error: "Not signed in",
+      status: "ERROR",
+    });
+  }
+
+  try {
+    // Delete document using writeClient
+    await writeClient.delete(startupId);
+    
+    return parseServerActionResponse({
+      error: "",
+      status: "SUCCESS",
+    });
+  } catch (error) {
+    console.error("Error deleting startup:", error);
+    return parseServerActionResponse({
+      error: error.message || "Failed to delete startup",
       status: "ERROR",
     });
   }

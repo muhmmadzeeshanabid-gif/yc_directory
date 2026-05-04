@@ -8,10 +8,13 @@ import Image from "next/image";
 import markdownit from "markdown-it";
 import { Skeleton } from "@/components/ui/skeleton";
 import View from "@/components/View";
+import { auth } from "@/auth";
+import DeleteStartupButton from "@/components/DeleteStartupButton";
 
 const md = markdownit();
 
 const StartupDetails = async ({ params }) => {
+  const session = await auth();
   const id = (await params).id;
 
   const post = await client.fetch(STARTUP_BY_ID_QUERY, { id });
@@ -61,7 +64,13 @@ const StartupDetails = async ({ params }) => {
                 <p className="text-16-medium !text-black-300">@{post.author?.username || post.author?.name}</p>
               </div>
             </Link>
-            <p className="category-tag">{post.category}</p>
+            
+            <div className="flex items-center gap-3">
+              <p className="category-tag">{post.category}</p>
+              {session?.id === post.author?._id && (
+                <DeleteStartupButton startupId={id} />
+              )}
+            </div>
           </div>
 
           <h3 className="text-30-bold">Pitch Details</h3>
