@@ -6,6 +6,7 @@ import slugify from "slugify";
 import { writeClient } from "@/sanity/lib/write-client";
 import { client } from "@/sanity/lib/client";
 import { formSchema } from "@/lib/validation";
+import { revalidatePath } from "next/cache";
 
 export const createStartUp = async (state, formData) => {
   const session = await auth();
@@ -44,6 +45,9 @@ export const createStartUp = async (state, formData) => {
     await formSchema.parseAsync({ title, description, category, link, pitch });
 
     const result = await writeClient.create({ _type: "startup", ...startup });
+
+    // Tell Next.js cache to update the home page to show the new startup!
+    revalidatePath("/", "layout");
 
     return parseServerActionResponse({
       ...result,
@@ -86,6 +90,9 @@ export const deleteStartup = async (startupId) => {
   try {
     // Delete document using writeClient
     await writeClient.delete(startupId);
+    
+    // Tell Next.js cache to update the home page to remove the deleted startup!
+    revalidatePath("/", "layout");
     
     return parseServerActionResponse({
       error: "",
